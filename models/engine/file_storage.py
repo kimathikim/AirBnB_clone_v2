@@ -22,7 +22,8 @@ class FileStorage:
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
-        self.all().update({obj.to_dict()["__class__"] + "." + obj.id: obj})
+        key = obj.to_dict()["__class__"] + "." + obj.id
+        FileStorage.__objects[key] = obj
 
     def save(self):
         """Saves storage dictionary to file"""
@@ -56,10 +57,13 @@ class FileStorage:
             temp = {}
             with open(FileStorage.__file_path, "r") as f:
                 temp = json.load(f)
+                if not temp:
+                    print("File is empty")
+                    return
                 for key, val in temp.items():
                     self.all()[key] = classes[val["__class__"]](**val)
         except FileNotFoundError:
-            pass
+            print(f"Error: File '{FileStorage.__file_path}' not found.")
 
     def delete(self, obj=None):
         """delete obj from __objects if it’s inside - if obj is equal to None,
