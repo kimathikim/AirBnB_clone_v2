@@ -17,10 +17,12 @@ class BaseModel:
 
     if getenv("HBNB_TYPE_STORAGE") == "db":
         id = Column(String(60), primary_key=True, nullable=False)
-        created_at = Column(DateTime, default=datetime.utcnow(), nullable=False)
-        updated_at = Column(DateTime, default=datetime.utcnow(), nullable=False)
 
-    def __init__(self, *arg, **kwargs):
+        created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+
+        updated_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+
+    def __init__(self, *args, **kwargs):
         """Instatntiates a new model"""
         if not kwargs:
             self.id = str(uuid.uuid4())
@@ -46,7 +48,6 @@ class BaseModel:
 
     def save(self):
         """Updates updated_at with current time when instance is changed"""
-
         from models import storage
 
         self.updated_at = datetime.now()
@@ -65,8 +66,6 @@ class BaseModel:
         return dictionary
 
     def delete(self):
-        """Delete the current instance from the storage"""
-
         from models import storage
 
-        storage.delete(self)
+        storage.delete()

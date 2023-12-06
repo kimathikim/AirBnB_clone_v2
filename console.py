@@ -40,7 +40,7 @@ class HBNBCommand(cmd.Cmd):
     def preloop(self):
         """Prints if isatty is false"""
         if not sys.__stdin__.isatty():
-            print("(hbnb)")
+            print("(hbnb) ", end="")
 
     def precmd(self, line):
         """Reformat command line for advanced command syntax.
@@ -83,7 +83,7 @@ class HBNBCommand(cmd.Cmd):
                     if (
                         pline[0] == "{"
                         and pline[-1] == "}"
-                        and isinstance(type(eval(pline)), dict)
+                        and type(eval(pline)) is dict
                     ):
                         _args = pline
                     else:
@@ -91,7 +91,7 @@ class HBNBCommand(cmd.Cmd):
                         # _args = _args.replace('\"', '')
             line = " ".join([_cmd, _cls, _id, _args])
 
-        except Exception:
+        except Exception as mess:
             pass
         finally:
             return line
@@ -125,33 +125,20 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """Create an object of any class"""
-        if not args:
+        args = args.split(" ")
+        class_args = args[0]
+        if not class_args:
             print("** class name missing **")
             return
-        # handle the split
-        class_name = args.split()[0]
-        if class_name not in HBNBCommand.classes:
+        elif class_args not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-
-        new_instance = HBNBCommand.classes[class_name]()
-        # loop through the args that are not class name
-        for arg in args.split()[1:]:
-            # split the arg into key and value
-            key, value = arg.split("=")
-            # remove quotes from value
+        kwargs = args[1:]
+        new_instance = HBNBCommand.classes[class_args]()
+        for key_value in kwargs:
+            [key, value] = key_value.split("=")
             value = value.replace("_", " ")
             value = value.replace('"', "")
-            # check if value is an int
-            if value.isdigit():
-                value = int(value)
-            # check if value is a float
-            elif "." in value:
-                try:
-                    value = float(value)
-                except ValueError:
-                    pass
-            # set the attribute
             setattr(new_instance, key, value)
         storage.new(new_instance)
         storage.save()
@@ -186,7 +173,7 @@ class HBNBCommand(cmd.Cmd):
 
         key = c_name + "." + c_id
         try:
-            print(storage.FileStorage__objects[key])
+            print(storage._FileStorage__objects[key])
         except KeyError:
             print("** no instance found **")
 
@@ -237,13 +224,12 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
+            for k, v in storage.all(HBNBCommand.classes[args]).items():
                 if k.split(".")[0] == args:
                     print_list.append(str(v))
         else:
-            for k, v in storage._FileStorage__objects.items():
+            for k, v in storage.all().items():
                 print_list.append(str(v))
-
         print(print_list)
 
     def help_all(self):
@@ -295,7 +281,7 @@ class HBNBCommand(cmd.Cmd):
             return
 
         # first determine if kwargs or args
-        if "{" in args[2] and "}" in args[2] and isinstance((eval(args[2])), dict):
+        if "{" in args[2] and "}" in args[2] and type(eval(args[2])) is dict:
             kwargs = eval(args[2])
             args = []  # reformat kwargs into list, ex: [<name>, <value>, ...]
             for k, v in kwargs.items():
