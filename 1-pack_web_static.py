@@ -11,18 +11,13 @@ def do_pack():
     """creates a versions dir if not already exist"""
     local("mkdir -p versions")
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    archive_name = "web_static_{}.tgz".format(timestamp)
-    command = "tar -cvzf versions/{} web_static".format(archive_name)
+    archive_name = "versions/web_static_{}.tgz".format(timestamp)
+    command = "tar -cvzf {} web_static".format(archive_name)
     result = local(command, capture=True)
     if result.failed:
         return None
 
-    file_size = os.path.getsize("versions/{}".format(archive_name))
+    file_size = os.path.getsize("{}".format(archive_name))
     print(result)
-    print(
-        "web_static packed: \
-versions/{} -> {}Bytes".format(
-            archive_name, file_size
-        )
-    )
+    print("web_static packed: {} -> {}Bytes".format(archive_name, file_size))
     return result
