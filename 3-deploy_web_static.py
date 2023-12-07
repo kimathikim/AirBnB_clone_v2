@@ -9,6 +9,7 @@ from datetime import datetime
 
 env.hosts = ["54.90.6.47", "100.25.34.49"]
 env.user = "ubuntu"
+env.key_filename = "~/.ssh/school"
 
 
 def do_pack():
@@ -68,12 +69,9 @@ def do_deploy(archive_path):
 
 
 def deploy():
-    """call the do_pack and do_deploy functions
-    to archive and distribute the web_static files to the server"""
-    try:
-        archive = do_pack()
-        if archive:
-            # Use execute function to run tasks on each host separately
-            execute(do_deploy, archive, hosts=env.hosts)
-    except BaseException:
-        return None
+    """function that creates and distributes an archive to your web servers"""
+    archive_path = do_pack()
+    if archive_path is None:
+        return False
+    deployed = do_deploy(archive_path)
+    return deployed
