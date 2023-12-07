@@ -3,6 +3,7 @@
 that creates and distributes an archive to your web servers,
 using the function deploy"""
 from os import path
+
 from fabric.operations import run, put, local
 from fabric.api import env
 from datetime import datetime
@@ -75,3 +76,17 @@ def deploy():
         return False
     deployed = do_deploy(archive_path)
     return deployed
+
+
+def do_clean(number=0):
+    """the function deletes all old archives and keeps the most recent one"""
+    local(
+        "ls -1t versions/ | tail -n +{} | xargs -I {{}} rm versions/{{}}.".format(
+            number + 1
+        )
+    )
+    run(
+        "ls -1t /data/web_static/releases | tail -n +{} | xargs -I {{}} rm -rf /data/web_static/releases/{{}}".format(
+            number + 1
+        )
+    )
